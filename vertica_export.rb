@@ -58,15 +58,15 @@ if (ARGV.size > 2)
   exit 1
 end
 
-filename = ARGV[0]
+output_file = ARGV[0]
 query = ARGV[1]
 
-@logger.info "Exporting query results to #{filename}"
+@logger.info "Exporting query results to #{output_file}"
 @logger.debug "Query is: #{query}"
 
 start = Time.now
 
-output = File.open(filename, 'w')
+output = File.open(output_file, 'w')
 
 row_count = 0
 connection.query(query) do |row|

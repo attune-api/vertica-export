@@ -1,4 +1,5 @@
 #!/usr/bin/env ruby
+require 'logger'
 require 'rubygems'
 require 'bundler/setup'
 

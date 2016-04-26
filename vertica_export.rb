@@ -19,6 +19,9 @@ opt_parser = OptionParser.new do |opt|
   opt.on("-c", "--config PATH", "Configuration file: configures Vertica connection parameters.") do |path|
     @options[:config] = path
   end
+  opt.on("-l", "--log-file PATH", "Full path to output log file") do |logfile|
+    @options[:logfile] = logfile
+  end
   opt.on("-h","--help","help") do
     puts opt_parser
     exit
@@ -27,8 +30,16 @@ end
 
 opt_parser.parse!
 
-def log(message)
-  puts(message) unless @options[:quiet]
+if @options[:logfile]
+  file = open(@options[:logfile], 'a')
+  file.sync = true #defence against broken logs, allow to tail -f the file
+  @logger = Logger.new(file)
+else
+  @logger = Logger.new STDOUT
+end
+@logger.datetime_format = Time.now.strftime "%Y-%m-%dT%H:%M:%S"
+@logger.formatter = proc do |severity, datetime, progname, msg|
+   "#{Process.pid} #{self.class.name} #{datetime} #{severity}: #{msg}\n"
 end
 
 vertica_config = JSON.parse(@options[:config] ? File.read( @options[:config]) : File.join(File.dirname(__FILE__), 'vertica_config.json'))
@@ -41,7 +52,7 @@ if (ARGV.size < 2)
 end
 
 if (ARGV.size > 2)
-  log "Too many arguments."
+  puts "Too many arguments."
   puts opt_parser
   exit 1
 end
@@ -49,7 +60,9 @@ end
 filename = ARGV[0]
 query = ARGV[1]
 
-log "Exporting query results to #{filename}: #{query}"
+@logger.info "Exporting query results to #{filename}"
+@logger.debug "Query is: #{query}"
+
 start = Time.now
 
 output = File.open(filename, 'w')
@@ -59,10 +72,10 @@ connection.query(query) do |row|
   output << row.to_json
   output << "\n"
   row_count += 1
-  log("Processed #{row_count} rows") if (row_count % 10000 == 0)
+  @logger.debug("Processed #{row_count} rows") if (row_count % 10000 == 0)
 end
 
 output.close
 
-log "Completed export, processed #{row_count} rows"
-log "Took #{Time.now - start}"
+@logger.info "Completed export, processed #{row_count} rows"
+@logger.info "Took #{Time.now - start}"

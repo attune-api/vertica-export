@@ -69,7 +69,7 @@ output = File.open(filename, 'w')
 
 row_count = 0
 connection.query(query) do |row|
-  output << row.to_json
+  output << row.update(row) { |_,v| ( v.is_a?(String) && !v.valid_encoding? ) ? v.chars.select(&:valid_encoding?).join : v}.to_json
   output << "\n"
   row_count += 1
   @logger.debug("Processed #{row_count} rows") if (row_count % 10000 == 0)

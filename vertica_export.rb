@@ -16,6 +16,9 @@ opt_parser = OptionParser.new do |opt|
   opt.on("-q", "--quiet", "Quiet mode; eliminate informational messages.") do
     @options[:quiet] = true
   end
+  opt.on("-c", "--config PATH", "Configuration file: configures Vertica connection parameters.") do |path|
+    @options[:config] = path
+  end
   opt.on("-h","--help","help") do
     puts opt_parser
     exit
@@ -28,7 +31,7 @@ def log(message)
   puts(message) unless @options[:quiet]
 end
 
-vertica_config = JSON.parse(File.read('vertica_config.json'))
+vertica_config = JSON.parse(@options[:config] ? File.read( @options[:config]) : File.join(File.dirname(__FILE__), 'vertica_config.json'))
 connection = Vertica.connect(vertica_config)
 
 if (ARGV.size < 2)

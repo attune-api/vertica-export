@@ -14,9 +14,6 @@ require 'vertica'
 opt_parser = OptionParser.new do |opt|
   opt.banner = "Usage: vertica_export.rb DESTFILE QUERY"
   opt.separator "Options"
-  opt.on("-q", "--quiet", "Quiet mode; eliminate informational messages.") do
-    @options[:quiet] = true
-  end
   opt.on("-c", "--config PATH", "Configuration file: configures Vertica connection parameters.") do |path|
     @options[:config] = path
   end

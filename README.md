@@ -22,7 +22,6 @@ Database connection parameters are specifed in the `vertica_config.json` file:
 ➜  vertica-export  ./vertica_export -h
 Usage: vertica_export DESTFILE QUERY
 Options
-    -q, --quiet                      Quiet mode; eliminate informational messages.
     -c, --config PATH                Configuration file: configures Vertica connection parameters.
     -l, --log_file PATH              Full path to output log file
         --log-level LEVEL            Logger level configuration, Valid values are: DEBUG, INFO, WARN, ERROR, FATAL, UNKNOWN

@@ -23,6 +23,9 @@ opt_parser = OptionParser.new do |opt|
   opt.on("-l", "--log-file PATH", "Full path to output log file") do |logfile|
     @options[:logfile] = logfile
   end
+  opt.on("--log-level LEVEL", "Logger level configuration, Valid values are: DEBUG, INFO, WARN, ERROR, FATAL, UNKNOWN") do |level|
+    @options[:loglevel] = level.to_sym
+  end
   opt.on("-h","--help","help") do
     puts opt_parser
     exit
@@ -42,6 +45,7 @@ end
 @logger.formatter = proc do |severity, datetime, progname, msg|
    "#{Process.pid} #{self.class.name} #{datetime} #{severity}: #{msg}\n"
 end
+@logger.level = @options[:loglevel] ? Logger.const_get @options[:loglevel] :  Logger::INFO
 
 vertica_config = JSON.parse(@options[:config] ? File.read( @options[:config]) : File.join(File.dirname(__FILE__), 'vertica_config.json'))
 connection = Vertica.connect(vertica_config)

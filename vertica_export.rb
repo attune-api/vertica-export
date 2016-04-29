@@ -42,7 +42,7 @@ end
 @logger.formatter = proc do |severity, datetime, progname, msg|
    "#{Process.pid} #{self.class.name} #{datetime} #{severity}: #{msg}\n"
 end
-@logger.level = @options[:loglevel] ? Logger.const_get @options[:loglevel] :  Logger::INFO
+@logger.level = @options[:loglevel] ? Logger.const_get("#{@options[:loglevel]}") :  Logger::INFO
 
 vertica_config = JSON.parse(@options[:config] ? File.read( @options[:config]) : File.join(File.dirname(__FILE__), 'vertica_config.json'))
 connection = Vertica.connect(vertica_config)

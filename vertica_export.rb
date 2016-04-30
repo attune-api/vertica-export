@@ -12,7 +12,7 @@ require 'vertica'
 @options = {}
 
 opt_parser = OptionParser.new do |opt|
-  opt.banner = "Usage: vertica_export.rb DESTFILE QUERY"
+  opt.banner = "Usage: vertica_export.rb -o|--output-file OUTPUT_FILE_NAME QUERY"
   opt.separator "Options"
   opt.on("-c", "--config PATH", "Configuration file: configures Vertica connection parameters.") do |path|
     @options[:config] = path
@@ -22,6 +22,13 @@ opt_parser = OptionParser.new do |opt|
   end
   opt.on("--log-level LEVEL", "Logger level configuration, Valid values are: DEBUG, INFO, WARN, ERROR, FATAL, UNKNOWN") do |level|
     @options[:loglevel] = level.to_sym
+  end
+  opt.on("-o", "--output-file", "Full path where query results will be stored") do |outfile|
+    if File.directory?(outfile)
+      raise "Output path cannot be a directory"
+    else
+      @options[:outfile] = outfile
+    end
   end
   opt.on("-h","--help","help") do
     puts opt_parser
@@ -53,21 +60,20 @@ if (ARGV.size < 2)
   exit 1
 end
 
-if (ARGV.size > 2)
+if (ARGV.size > 1)
   puts "Too many arguments."
   puts opt_parser
   exit 1
 end
 
-output_file = ARGV[0]
-query = ARGV[1]
+query = ARGV[0]
 
-@logger.info "Exporting query results to #{output_file}"
+@logger.info "Exporting query results to #{@options[:outfile]}"
 @logger.debug "Query is: #{query}"
 
 start = Time.now
 
-output = File.open(output_file, 'w')
+output = File.open(@options[:outfile], 'w')
 
 row_count = 0
 connection.query(query) do |row|

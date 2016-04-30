@@ -51,14 +51,14 @@ end
 end
 @logger.level = @options[:loglevel] ? Logger.const_get("#{@options[:loglevel]}") :  Logger::INFO
 
-vertica_config = JSON.parse(@options[:config] ? File.read( @options[:config]) : File.join(File.dirname(__FILE__), 'vertica_config.json'))
-connection = Vertica.connect(vertica_config)
-
-if (ARGV.size < 2)
-  puts "Missing required argument."
-  puts opt_parser
-  exit 1
+vertica_config_file = @options[:config] ? @options[:config] : File.join(File.dirname(__FILE__), 'vertica_config.json')
+if File.exist?(vertica_config_file)
+  vertica_config = JSON.parse(File.read(vertica_config_file))
+else
+  raise "Cannot read #{vertica_config_file}, please make sure that file exists and that the user has sufficient permissions to read it"
 end
+
+connection = Vertica.connect(vertica_config)
 
 if (ARGV.size > 1)
   puts "Too many arguments."

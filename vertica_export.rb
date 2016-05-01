@@ -23,7 +23,7 @@ opt_parser = OptionParser.new do |opt|
   opt.on("--log-level LEVEL", "Logger level configuration, Valid values are: DEBUG, INFO, WARN, ERROR, FATAL, UNKNOWN") do |level|
     @options[:loglevel] = level.to_sym
   end
-  opt.on("-o", "--output-file", "Full path where query results will be stored") do |outfile|
+  opt.on("-o", "--output-file PATH", "Full path where query results will be stored") do |outfile|
     if File.directory?(outfile)
       raise "Output path cannot be a directory"
     else

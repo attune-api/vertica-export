@@ -30,6 +30,9 @@ opt_parser = OptionParser.new do |opt|
       @options[:outfile] = outfile
     end
   end
+  opt.on("-r", "--retry-count COUNT", Integer, "number of retries when query fails") do |retry_count|
+    @options[:retry_count] = retry_count
+  end
   opt.on("-h","--help","help") do
     puts opt_parser
     exit
@@ -37,6 +40,7 @@ opt_parser = OptionParser.new do |opt|
 end
 
 opt_parser.parse!
+@options[:retry_count] ||= 3
 
 if @options[:logfile]
   file = open(@options[:logfile], 'a')
@@ -75,12 +79,25 @@ start = Time.now
 
 output = File.open(@options[:outfile], 'w')
 
-row_count = 0
-connection.query(query) do |row|
-  output << row.update(row) { |_,v| ( v.is_a?(String) && !v.valid_encoding? ) ? v.chars.select(&:valid_encoding?).join : v}.to_json
-  output << "\n"
-  row_count += 1
-  @logger.debug("Processed #{row_count} rows") if (row_count % 10000 == 0)
+retry_count = 0
+begin
+  row_count = 0
+  connection.query(query) do |row|
+    output << row.update(row) { |_,v| ( v.is_a?(String) && !v.valid_encoding? ) ? v.chars.select(&:valid_encoding?).join : v}.to_json
+    output << "\n"
+    row_count += 1
+    @logger.debug("Processed #{row_count} rows") if (row_count % 10000 == 0)
+  end
+rescue Vertica::Error => e
+  @logger.error("Exception thrown: #{e.message}, Retry count=#{@options[:retry_count]}, current count=#{retry_count}")
+  retry_count+=1
+  if retry_count < @options[:retry_count]
+    output.truncate(0)
+    connection.reset_connection
+    retry
+  else
+    raise e
+  end
 end
 
 output.close

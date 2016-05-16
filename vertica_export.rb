@@ -33,6 +33,9 @@ opt_parser = OptionParser.new do |opt|
   opt.on("-r", "--retry-count COUNT", Integer, "number of retries when query fails") do |retry_count|
     @options[:retry_count] = retry_count
   end
+  opt.on("-t", "--timeout DURATION", Integer, "the query timeout (in seconds) to wait for 1st row") do |timeout|
+    @options[:timeout] = timeout
+  end
   opt.on("-h","--help","help") do
     puts opt_parser
     exit
@@ -61,7 +64,7 @@ if File.exist?(vertica_config_file)
 else
   raise "Cannot read #{vertica_config_file}, please make sure that file exists and that the user has sufficient permissions to read it"
 end
-
+vertica_config[:read_timeout] = @options[:timeout] if @options[:timeout]
 connection = Vertica.connect(vertica_config)
 
 if (ARGV.size > 1)

@@ -93,6 +93,7 @@ rescue Vertica::Error => e
   retry_count+=1
   if retry_count < @options[:retry_count]
     output.truncate(0)
+    connection.cancel
     connection.reset_connection
     retry
   else

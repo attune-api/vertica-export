@@ -51,7 +51,7 @@ else
 end
 @logger.datetime_format = Time.now.strftime "%Y-%m-%dT%H:%M:%S"
 @logger.formatter = proc do |severity, datetime, progname, msg|
-   "#{Process.pid} #{self.class.name} #{datetime} #{severity}: #{msg}\n"
+   "#{Process.pid} #{@options[:outfile]} #{datetime} #{severity}: #{msg}\n"
 end
 @logger.level = @options[:loglevel] ? Logger.const_get("#{@options[:loglevel]}") :  Logger::INFO
 
@@ -83,7 +83,7 @@ retry_count = 0
 begin
   row_count = 0
   connection.query(query) do |row|
-    output << row.update(row) { |_,v| ( v.is_a?(String) && !v.valid_encoding? ) ? v.chars.select(&:valid_encoding?).join : v}.to_json
+    output << row.update(row) { |_,v| (v.is_a?(String) && !v.valid_encoding?) ? v.chars.select(&:valid_encoding?).join : v}.to_json
     output << "\n"
     row_count += 1
     @logger.debug("Processed #{row_count} rows") if (row_count % 10000 == 0)

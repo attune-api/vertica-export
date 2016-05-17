@@ -124,5 +124,4 @@ end
 
 output.close
 
-@logger.info "Completed #{@options[:outfile]} export, processed #{row_count} rows"
-@logger.info "[#{@options[:outfile]}] Took #{Time.now - start}"
+@logger.info "Export completed, processed #{row_count} rows, took #{Time.now - start}"

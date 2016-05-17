@@ -56,8 +56,9 @@ else
   @logger = Logger.new STDOUT
 end
 @logger.datetime_format = Time.now.strftime "%Y-%m-%dT%H:%M:%S"
+logger_label = File.basename(@options[:outfile],File.extname(@options[:outfile]))
 @logger.formatter = proc do |severity, datetime, progname, msg|
-   "#{Process.pid} #{@options[:outfile]} #{datetime} #{severity}: #{msg}\n"
+   "#{Process.pid} #{logger_label} #{datetime} #{severity}: #{msg}\n"
 end
 @logger.level = @options[:loglevel] ? Logger.const_get("#{@options[:loglevel]}") :  Logger::INFO
 

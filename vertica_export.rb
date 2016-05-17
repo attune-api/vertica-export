@@ -30,6 +30,9 @@ opt_parser = OptionParser.new do |opt|
       @options[:outfile] = outfile
     end
   end
+  opt.on("--drop-invalid-characters", "Drop invalid characters from string column values of the result-set") do |drop|
+    @options[:drop_invalid] = drop
+  end
   opt.on("-r", "--retry-count COUNT", Integer, "number of retries when query fails") do |retry_count|
     @options[:retry_count] = retry_count
   end
@@ -81,12 +84,26 @@ query = ARGV[0]
 start = Time.now
 
 output = File.open(@options[:outfile], 'w')
-
 retry_count = 0
+
+remove_invalid = if @options[:drop_invalid]
+                   lambda do |row|
+                     row.update(row) do  |_,v|
+                       if v.is_a?(String) && !v.valid_encoding?
+                         v.chars.select(&:valid_encoding?).join
+                       else
+                         v
+                       end
+                     end
+                   end
+                 else
+                   ->(row) { row }
+                 end
+
 begin
   row_count = 0
   connection.query(query) do |row|
-    output << row.update(row) { |_,v| (v.is_a?(String) && !v.valid_encoding?) ? v.chars.select(&:valid_encoding?).join : v}.to_json
+    output << remove_invalid.call(row).to_json
     output << "\n"
     row_count += 1
     @logger.debug("Processed #{row_count} rows") if (row_count % 10000 == 0)

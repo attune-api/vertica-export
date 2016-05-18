@@ -52,6 +52,15 @@ end
 
 opt_parser.parse!
 @options[:retry_count] ||= 3
+if (ARGV.size > 1)
+  puts "Too many arguments."
+  puts opt_parser
+  exit 1
+elsif (ARGV.size < 1 and @options[:query_string].nil?)
+  puts opt_parser
+  exit 1
+end
+
 
 if @options[:logfile]
   file = open(@options[:logfile], 'a')
@@ -75,12 +84,6 @@ else
 end
 vertica_config[:read_timeout] = @options[:timeout] if @options[:timeout]
 connection = Vertica.connect(vertica_config)
-
-if (ARGV.size > 1)
-  puts "Too many arguments."
-  puts opt_parser
-  exit 1
-end
 
 query = @options[:query_string] ?  @options[:query_string] : ARGV[0]
 

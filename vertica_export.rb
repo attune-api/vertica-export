@@ -12,10 +12,15 @@ require 'vertica'
 @options = {}
 
 opt_parser = OptionParser.new do |opt|
-  opt.banner = "Usage: vertica_export.rb -o|--output-file OUTPUT_FILE_NAME QUERY"
+  opt.banner = "Usage: vertica_export.rb -o|--output-file OUTPUT_FILE_NAME -f|--query-file|QUERY_STRING"
   opt.separator "Options"
   opt.on("-c", "--config PATH", "Configuration file: configures Vertica connection parameters.") do |path|
     @options[:config] = path
+  end
+  opt.on('-f', "--query-file QUERY_FILE", "File to read the query from") do |query_file|
+    raise "File #{query_file} is un-reachable." if !File.exist?(query_file)
+    raise "Cannot pass query string together with -f|--query-file" if ARGV.size == 1
+    @options[:query_string] = File.read query_file
   end
   opt.on("-l", "--log-file PATH", "Full path to output log file") do |logfile|
     @options[:logfile] = logfile
@@ -77,7 +82,7 @@ if (ARGV.size > 1)
   exit 1
 end
 
-query = ARGV[0]
+query = @options[:query_string] ?  @options[:query_string] : ARGV[0]
 
 @logger.info "Exporting query results to #{@options[:outfile]}"
 @logger.debug "Query is: #{query}"

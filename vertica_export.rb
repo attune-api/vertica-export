@@ -9,14 +9,19 @@ require 'vertica'
 
 # Exports the results of a SQL query to Vertica as JSON
 # Trap Ctrl-C
+connection = nil
 Signal.trap ("INT") do
-  connection.cancel
-  connection.close
+  if connection
+    connection.cancel
+    connection.close
+  end
 end
 # Trap KILL
 Signal.trap ("TERM") do
-  connection.cancel
-  connection.close
+  if connection
+    connection.cancel
+    connection.close
+  end
 end
 @options = {}
 

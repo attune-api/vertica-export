@@ -8,7 +8,16 @@ require 'optparse'
 require 'vertica'
 
 # Exports the results of a SQL query to Vertica as JSON
-
+# Trap Ctrl-C
+Signal.trap ("INT") do
+  connection.cancel
+  connection.close
+end
+# Trap KILL
+Signal.trap ("TERM") do
+  connection.cancel
+  connection.close
+end
 @options = {}
 
 opt_parser = OptionParser.new do |opt|
